@@ -69,17 +69,17 @@ public class NewsService {
     }
 
     public ResponseEntity<String> sendPushNotification(PushRequest request) {
-        System.out.println("📨 sendPushNotification() 진입");
-        System.out.println("🔑 토큰: " + request.getToken());
-        System.out.println("📬 제목: " + request.getTitle());
-        System.out.println("📬 내용: " + request.getBody());
+        System.out.println(" sendPushNotification() 진입");
+        System.out.println(" 토큰: " + request.getToken());
+        System.out.println(" 제목: " + request.getTitle());
+        System.out.println(" 내용: " + request.getBody());
         try {
 
             String response = firebaseService.sendMessage(request.getToken(), request.getTitle(), request.getBody());
-            System.out.println("✅ Firebase 전송 응답: " + response);
+            System.out.println(" Firebase 전송 응답: " + response);
             return ResponseEntity.ok("푸시 전송 성공: " + response);
         } catch (Exception e) {
-            System.out.println("❌ 푸시 전송 중 오류 발생: " + e.getMessage());
+            System.out.println(" 푸시 전송 중 오류 발생: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.internalServerError().body("푸시 전송 실패: " + e.getMessage());
         }
@@ -87,15 +87,15 @@ public class NewsService {
 
 
     public ResponseEntity<String> sendPushDelayed(PushRequest request) {
-        System.out.println("⏱️ 푸시 예약 요청 수신됨 - 5초 후 전송 예정");
+        System.out.println(" 푸시 예약 요청 수신됨 - 5초 후 전송 예정");
 
         try {
             Thread.sleep(5000); // 5초 대기 (주의: 동기 블록)
             String response = firebaseService.sendMessage(request.getToken(), request.getTitle(), request.getBody());
-            System.out.println("✅ 예약 푸시 전송 성공: " + response);
+            System.out.println(" 예약 푸시 전송 성공: " + response);
             return ResponseEntity.ok("푸시 전송 성공: " + response);
         } catch (Exception e) {
-            System.out.println("❌ 예약 푸시 전송 실패: " + e.getMessage());
+            System.out.println(" 예약 푸시 전송 실패: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.internalServerError().body("푸시 전송 실패: " + e.getMessage());
         }
