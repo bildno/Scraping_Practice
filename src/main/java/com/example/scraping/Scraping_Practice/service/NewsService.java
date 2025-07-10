@@ -1,6 +1,9 @@
 package com.example.scraping.Scraping_Practice.service;
 
 import com.example.scraping.Scraping_Practice.dto.NewsDto;
+import com.example.scraping.Scraping_Practice.dto.PushRequest;
+// import com.google.firebase.internal.FirebaseService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -8,6 +11,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 import org.jsoup.*;
 
@@ -15,10 +19,20 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.Notification;
+import org.springframework.http.ResponseEntity;
+
 
 // 이 서비스 클래스는 Google 뉴스에서 '스테이블코인' 관련 뉴스를 수집하여 반환한다.
 @Service
+@RequiredArgsConstructor
 public class NewsService {
+
+    private final FirebaseService firebaseService;
+
+
     public List<NewsDto> fetchStablecoinNews(String keyword) throws IOException {
         // 뉴스 결과를 저장할 리스트 생성
         List<NewsDto> result = new ArrayList<>();
@@ -54,4 +68,36 @@ public class NewsService {
         return result;
     }
 
+    public ResponseEntity<String> sendPushNotification(PushRequest request) {
+        System.out.println("📨 sendPushNotification() 진입");
+        System.out.println("🔑 토큰: " + request.getToken());
+        System.out.println("📬 제목: " + request.getTitle());
+        System.out.println("📬 내용: " + request.getBody());
+        try {
+
+            String response = firebaseService.sendMessage(request.getToken(), request.getTitle(), request.getBody());
+            System.out.println("✅ Firebase 전송 응답: " + response);
+            return ResponseEntity.ok("푸시 전송 성공: " + response);
+        } catch (Exception e) {
+            System.out.println("❌ 푸시 전송 중 오류 발생: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body("푸시 전송 실패: " + e.getMessage());
+        }
+    }
+
+
+    public ResponseEntity<String> sendPushDelayed(PushRequest request) {
+        System.out.println("⏱️ 푸시 예약 요청 수신됨 - 5초 후 전송 예정");
+
+        try {
+            Thread.sleep(5000); // 5초 대기 (주의: 동기 블록)
+            String response = firebaseService.sendMessage(request.getToken(), request.getTitle(), request.getBody());
+            System.out.println("✅ 예약 푸시 전송 성공: " + response);
+            return ResponseEntity.ok("푸시 전송 성공: " + response);
+        } catch (Exception e) {
+            System.out.println("❌ 예약 푸시 전송 실패: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body("푸시 전송 실패: " + e.getMessage());
+        }
+    }
 }
